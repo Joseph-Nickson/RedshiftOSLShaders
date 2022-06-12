@@ -1,0 +1,52 @@
+// Index based Randomizer
+// Recreation of Arnold's alJitter for redshift, built off Saul Espinosa's shader
+// This file is licensed under Apache 2.0 license
+
+
+shader rsInputJitter
+[[  string help = "Randomizes an inputs colour using UserData.",
+    string label = "rsInputJitter" ]]
+(
+        // Defube Inputs
+        color Input = 0,
+        int   Data   = 0,
+        float ValMin   = 0.0 [[string label = "Value Min", float min = -1,float max = 1]],
+        float ValMax   = 0.0 [[string label = "Value Max", float min = -1,float max = 1]],                  
+        float HueMin   = 0.0 [[string label = "Hue Min", float min = -1,float max = 1]],
+        float HueMax   = 0.0 [[string label = "Hue Max", float min = -1,float max = 1]],  
+        float SatMin    = 0.0[[string label = "Saturation Min", float min = -1,float max = 1]],
+        float SatMax    = 0.0[[string label = "Saturation Max", float min = -1,float max = 1]],        
+        float TempMin   = 0.0[[string label = "Temperature Min", float min = -.5,float max = .5]],
+        float TempMax   = 0.0[[string label = "Temperature Max", float min = -.5,float max = .5]],         
+        float TintMin   = 0.0[[string label = "Tint Min", float min = -.5,float max = .5]],
+        float TintMax   = 0.0[[string label = "Tint Max", float min = -.5,float max = .5]],                            
+        int   Seed      = 1[[int min = 0,int max = 100]],                        
+
+        /// Define Outputs                      
+        output color ColorOut = Input,
+)
+{
+        // Output Values
+        float ratio1 = noise("cell", vector(abs(Data), abs(Seed), 10));
+        float ratio2 = noise("cell", vector(abs(Data), abs(Seed), 11));
+        float ratio3 = noise("cell", vector(abs(Data), abs(Seed), 12));
+        float ratio4 = noise("cell", vector(abs(Data), abs(Seed), 13));
+        float ratio5 = noise("cell", vector(abs(Data), abs(Seed), 14));  
+        float HueShift = mix(HueMin, HueMax, ratio1);
+        float SatShift = mix(SatMin, SatMax, ratio2);
+        float ValShift = mix(ValMin, ValMax, ratio3);  
+        float TempShift = mix(TempMin, TempMax, ratio4);
+        float TintShift = mix(TintMin, TintMax, ratio5);          
+        
+        color Out = transformc("rgb", "hsv", Input);      
+        Out[0] += HueShift;
+        Out[1] += SatShift;    
+        Out[2] += ValShift;
+        Out = transformc("hsv", "rgb", Out);  
+        
+        // Temp & Tint Shifts
+        Out[0] += TempShift;
+        Out[1] += TintShift;
+        Out[2] -= TempShift;
+        ColorOut = Out;
+}
